@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#make the cool spinny bracket
+
+spin()
+{
+  spinner="/|\\-/|\\-"
+  while :
+  do
+    for i in `seq 0 7`
+    do
+      echo -n "${spinner:$i:1}"
+      echo -en "\010"
+      sleep 1
+    done
+  done
+}
+
+#check if host is online with three packets
+echo "Searching..."
+
+# Start the Spinner:
+spin &
+# Make a note of its Process ID (PID):
+SPIN_PID=$!
+# Kill the spinner on any signal, including our own exit.
+trap "kill -9 $SPIN_PID" `seq 0 15`
+
+if ping -c 3 IPHOSTNAMEHERE
+then
+	echo "Connecting..."
+	sleep 3
+
+#start a sshfs session with defaults and mout it in the HOSTNAME dir under the user
+#You'll need to sub-out your own USER and HOSTNAMEIP fields.
+	echo "Enter session password"
+	mkdir /mnt/NAS
+	sudo sshfs -o allow_other,default_permissions USER@HOSTNAMEIP:/ /mnt/NAS
+	echo "We're in!"
+	cd /mnt/NAS
+else
+	echo "Host offline. Please check connection."
+fi
